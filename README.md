@@ -20,7 +20,7 @@ The key innovation in the script is a money saving one: we combine multiple page
 
 ### Why Choose Google Vision API?
 
-One reason for using the Google Vision API is simply that [Indian Electoral Roll PDFs](https://github.com/in-rolls/electoral_rolls) are on Google Cloud Coldline Storage. But besides convenience, [Google Vision API](https://cloud.google.com/vision/) also offers value. Google Vision API OCR can be more than 300x cheaper than [Abbyy Cloud OCR](https://www.ocrsdk.com/plans-and-pricing/). (The precise number depends on how many pages you need to process.) For instance, we processed 15,000 pages. On Google, we were able to combine 15,000 pages into ~ 1,000 requests. Assuming that we had exhausted the free tier, the price for 1,000 requests is $1.5. Had we tried to get text from 15,000 pages from AbbyyFine, we would have had to pay $450---$300 for the 10,000 tier + .03 per page for the remaining 5,000 pages.
+One reason for using the Google Vision API is simply that [Indian Electoral Roll PDFs](https://github.com/in-rolls/electoral_rolls) are on Google Cloud Coldline Storage. But besides convenience, [Google Vision API](https://cloud.google.com/vision/) also offers value. Google Vision API OCR can be more than 300x cheaper than [Abbyy Cloud OCR](https://www.ocrsdk.com/plans-and-pricing/). (The precise number depends on how many pages you need to process.) For instance, we processed 12,694 pages. On Google, we were able to combine 12,694 pages into ~ 1,000 requests. Assuming that we had exhausted the free tier, the price for 1,000 requests is $1.5. Had we tried to get text from 12,694 pages from AbbyyFine, we would have had to pay $381---$300 for the 10,000 tier + .03 per page for the remaining 2,694 pages.
 
 ### Issues
 
@@ -82,13 +82,13 @@ optional arguments:
 
 ### Application
 
-To illustrate how to use the script, we use it to process 15,000 Kerala English PDF Electoral Rolls. 
+To illustrate how to use the script, we use it to process 12,694 pages of Kerala English PDF Electoral Rolls. 
 
 We processed the electoral rolls using the [async pdf API request](https://cloud.google.com/vision/docs/pdf). We first split the electoral files using [split_elex_rolls.py](split_elex_rolls.py) into 15 page chunks. (We chose 15 pages after checking out errors at different resolutions. At 300 dpi, it turns out to be about 15 pages of electoral rolls. And returns on increasing resolution beyond 300 dpi are minimal.) We then called [google_vision_ocr_gcs.py](google_vision_ocr_gcs.py), which implements the [following workflow](gcs_workflow.md). 
 
 #### Output, Errors, Stats, and Utility Script
 
-1. **Data:** The output (text, JSON, png with bounding boxes) from 15,000 pages of Kerala English Electoral Rolls is available at: [Harvard Dataverse](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/MQPPNC).  (**Note:** Given the data include personal details of electors, we are only releasing the data for researchers.)
+1. **Data:** The output (text, JSON, png with bounding boxes) from 12,694 pages of Kerala English Electoral Rolls is available at: [Harvard Dataverse](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/MQPPNC).  (**Note:** Given the data include personal details of electors, we are only releasing the data for researchers.)
 
 2. **Log File and Stats:** Check out the [log file](sample_out/mplog.log) for details about failed requests, the [script](sample_out/google_vision_ocr_log2stat.ipynb) that gets statistics on the OCR confidence, and the resulting [stats (csv)](sample_out/google_vision_ocr_stat.csv). 
 
