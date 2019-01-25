@@ -1,4 +1,4 @@
-## Using Google Vision API to Get Text From (Unreadable) Electoral Rolls
+## Use Google Vision API to Get Text From (Unreadable) Electoral Rolls
 
 Use the Google Vision API to get the text from electoral rolls that are encoded as images or encoded incorrectly.
 
