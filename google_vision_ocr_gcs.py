@@ -419,7 +419,7 @@ if __name__ == "__main__":
     logging.info("Working bucket name on the GCS: {!s}".format(args.bucket_name))
 
     try:
-        pool = Pool(args.nthreads, worker_init, [lq, args.log_level])
+        pool = Pool(args.processes, worker_init, [lq, args.log_level])
 
         results = pool.map(partial(ocr_worker, args), input_files)
 
