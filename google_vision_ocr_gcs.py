@@ -243,7 +243,7 @@ def async_detect_document_text(bucket_name, image_file, textfile, jsonfile):
     if jsonfile is not 0:
         logging.info('Saving... {!s}'.format(jsonfile))
         with io.open(jsonfile, 'wb') as f:
-            f.write(str(document))
+            f.write(json_format.MessageToJson(document))
 
     output.delete()
 
