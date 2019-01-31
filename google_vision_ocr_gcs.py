@@ -232,6 +232,11 @@ def async_detect_document_text(bucket_name, image_file, textfile, jsonfile):
     response = json_format.Parse(
         json_string, types.AnnotateFileResponse())
 
+    error = response.responses[0].error
+    if error.code != 0:
+        logging.error("Vision API code: {!s}, msg: {!s}".format(error.code, error.message))
+        return None
+
     # The actual response for the first page of the input file.
     document = response.responses[0].full_text_annotation
 
@@ -297,34 +302,36 @@ def render_doc_text(bucket_name, filein, fileout, textfile, jsonfile):
     while True:
         try:
             doc = async_detect_document_text(bucket_name, filein, textfile, jsonfile)
-            image = Image.open(filein)
-            bounds = get_document_bounds(doc, FeatureType.BLOCK)
-            draw_boxes(image, bounds, 'blue')
-            bounds = get_document_bounds(doc, FeatureType.PARA)
-            draw_boxes(image, bounds, 'red')
-            bounds = get_document_bounds(doc, FeatureType.WORD)
-            draw_boxes(image, bounds, 'green')
+            if doc:
+                image = Image.open(filein)
+                bounds = get_document_bounds(doc, FeatureType.BLOCK)
+                draw_boxes(image, bounds, 'blue')
+                bounds = get_document_bounds(doc, FeatureType.PARA)
+                draw_boxes(image, bounds, 'red')
+                bounds = get_document_bounds(doc, FeatureType.WORD)
+                draw_boxes(image, bounds, 'green')
 
-            if fileout is not 0:
-                image.save(fileout)
-            else:
-                image.show()
+                if fileout is not 0:
+                    image.save(fileout)
+                else:
+                    image.show()
 
-            n = 0
-            sum = 0
-            for p in doc.pages:
-                for b in p.blocks:
-                    sum += b.confidence
-                    n += 1.0
-            conf = (sum / n)
-            break
-        except Exception as e:
-            logging.warn('{!s} (retry={:d})'.format(e, retry))
-            retry += 1
-            if retry > MAX_RETRY:
-                logging.error('Max retry, stoppped!!!')
-                conf = 0
+                n = 0
+                sum = 0
+                for p in doc.pages:
+                    for b in p.blocks:
+                        sum += b.confidence
+                        n += 1.0
+                conf = (sum / n)
                 break
+        except Exception as e:
+            logging.error('{!s}'.format(e))
+        logging.warn('retry={:d}'.format(retry))
+        retry += 1
+        if retry > MAX_RETRY:
+            logging.error('Max retry, stoppped!!!')
+            conf = 0
+            break
     return conf
 
 
