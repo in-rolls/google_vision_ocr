@@ -1,6 +1,5 @@
 Pillow==5.3.0
 PyMuPDF==1.14.3
 google-cloud-vision==0.34.0
-img2pdf==0.3.3
 google-cloud-storage==1.6.0
 logutils==0.3.5

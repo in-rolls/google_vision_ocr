@@ -23,8 +23,6 @@ from glob import glob
 from multiprocessing import Pool, Queue
 from functools import partial
 
-import img2pdf
-
 from google.cloud import storage
 from google.cloud import vision
 from google.cloud.vision import types
@@ -154,27 +152,26 @@ def get_bucket_name():
 
 def async_detect_document_text(bucket_name, image_file, textfile, jsonfile):
     # Supported mime_types are: 'application/pdf' and 'image/tiff'
-    mime_type = 'application/pdf'
+    mime_type = 'image/tiff'
 
     tmp_dir = tempfile._get_default_tempdir()
 
     png_fn = os.path.basename(image_file)
     fn = os.path.splitext(png_fn)[0]
-    pdf_fn = fn + '.pdf'
+    tif_fn = fn + '.tif'
     prefix_fn = fn + '-'
-    pdf_path = os.path.join(tmp_dir, pdf_fn)
+    tif_path = os.path.join(tmp_dir, tif_fn)
 
-    gcs_src_uri = 'gs://{}/{}'.format(bucket_name, pdf_fn)
+    gcs_src_uri = 'gs://{}/{}'.format(bucket_name, tif_fn)
     gcs_dst_uri = 'gs://{}/{}'.format(bucket_name, prefix_fn)
 
     logging.info('Converting... {!s}'.format(png_fn))
-    with open(pdf_path,"wb") as f:
-        f.write(img2pdf.convert([image_file]))
+    with Image.open(image_file) as im:
+        im.save(tif_path, compression='tiff_lzw', tiffinfo={317: 2, 278: 1})
+    logging.info('Uploading... {!s}'.format(tif_fn))
+    upload_blob(bucket_name, tif_path, tif_fn)
 
-    logging.info('Uploading... {!s}'.format(pdf_fn))
-    upload_blob(bucket_name, pdf_path, pdf_fn)
-
-    os.unlink(pdf_path)
+    os.unlink(tif_path)
 
     # How many pages should be grouped into each json output file.
     # With a file of 1 pages
@@ -206,7 +203,7 @@ def async_detect_document_text(bucket_name, image_file, textfile, jsonfile):
     result = operation.result(timeout=GOOGLE_OPERATION_TIMEOUT)
     logging.debug('{!s}'.format(result))
 
-    delete_blob(bucket_name, pdf_fn)
+    delete_blob(bucket_name, tif_fn)
 
     # Once the request has completed and the output has been
     # written to GCS, we can list all the output files.
@@ -302,11 +299,11 @@ def render_doc_text(bucket_name, filein, fileout, textfile, jsonfile):
             doc = async_detect_document_text(bucket_name, filein, textfile, jsonfile)
             image = Image.open(filein)
             bounds = get_document_bounds(doc, FeatureType.BLOCK)
-            draw_norm_boxes(image, bounds, 'blue')
+            draw_boxes(image, bounds, 'blue')
             bounds = get_document_bounds(doc, FeatureType.PARA)
-            draw_norm_boxes(image, bounds, 'red')
+            draw_boxes(image, bounds, 'red')
             bounds = get_document_bounds(doc, FeatureType.WORD)
-            draw_norm_boxes(image, bounds, 'green')
+            draw_boxes(image, bounds, 'green')
 
             if fileout is not 0:
                 image.save(fileout)
